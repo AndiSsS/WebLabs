@@ -21,41 +21,21 @@
 						<ul id="ul-chat" class="chat">
 							<?php 
 							$stmt = $pdo->query("SELECT * FROM `chat_messages` ORDER BY `when` DESC LIMIT 100");
+							$messages = array();
 
 							while ($row = $stmt->fetch())
 							{
-								$username = $row["username"];
-								$message = $row["message"];
-								$when = date('m/d/Y G:i:s', $row["when"]);
-								$imgUrl = getUserImageUrl($row["username"]);
+								$messages[] = [ 'username' => $row["username"],
+												'text' => $row["message"],
+												'when' => date('m/d/Y G:i:s', $row["when"]),
+												'imgUrl' => getUserImageUrl($row["username"])];
 
 								if(!isset($_SESSION["lastMessageId"]) || $_SESSION["lastMessageId"] < $row["id"])
-									$_SESSION["lastMessageId"] = $row["id"];
+									$_SESSION["lastMessageId"] = $row["id"];						
 
-// 								echo <<<EOL
-// 							    <li class="left clearfix">
-// 									<span class="chat-img pull-left">
-// 										<img src="{$imgUrl}" class="img-circle" />
-// 									</span>
-// 									<div class="chat-body clearfix">
-// 										<div class="header">
-// 											<strong class="primary-font Nombre" >{$username}</strong> 
-// 											<small class="pull-right text-muted">{$when}</small>
-// 										</div>
-// 										<p class="message">
-// 											{$message}
-// 										</p>
-// 									</div>
-// 								</li>
-// EOL;								
-
-								echo '<message  text="'.$message.'" 
-												username="'.$username.'"
-												date-time="'.$when.'" 
-												image-url="'.$imgUrl.'"></message> 
-									';
 							}
-							
+
+							echo '<message :messages=messages></message>';
 							?>
 						</ul>
 					</div>
@@ -72,41 +52,53 @@
 			</div>
 		</div>
 	</div>
-	<li style="display:none" id="message-template" class="left clearfix">
-		<span class="chat-img pull-left">
-			<img id="message-image" src="http://placehold.it/50/55C1E7/fff&text=" class="img-circle" />
-		</span>
-		<div class="chat-body clearfix">
-			<div class="header">
-				<strong id="message-username" class="primary-font Nombre"></strong> 
-				<small id="message-time" class="pull-right text-muted" id="message-time"></small>
-			</div>
-			<p id="message-text" class="message"></p>
-		</div>
-	</li>
-
 <script>
+	// Створюєм компонент message
 	Vue.component('message', {
-		props: ['text', 'username', 'dateTime', 'imageUrl'],
+		// Визначаєм вхідні данні
+		props: {
+			// Тип - масив, обов'язковий параметр
+			messages: {
+				type: Array,
+				required: true
+			}
+		},
+		// Визначаємо шаблон для повідомлення
 		template: `
 		<div>
-			<li id="message-template" class="left clearfix">
+			<li v-for="message in messages" :key="message.when" class="left clearfix">
 				<span class="chat-img pull-left">
-					<img id="message-image" :src="imageUrl" class="img-circle" />
+					<img :src="message.imgUrl" class="img-circle" />
 				</span>
 				<div class="chat-body clearfix">
 					<div class="header">
-						<strong id="message-username" class="primary-font Nombre">{{ username }}</strong> 
-						<small id="message-time" class="pull-right text-muted" id="message-time">{{ dateTime }}</small>
+						<strong class="primary-font Nombre">{{ message.username }}</strong> 
+						<small class="pull-right text-muted" >{{ message.when }}</small>
 					</div>
-					<p id="message-text" class="message">{{ text }}</p>
+					<p class="message">{{ message.text }}</p>
 				</div>
 			</li>
-		<div>
-
+		</div>
 		`
 	})
-	new Vue({
+	// Створюєм головний об'єкт Vue
+	var vue = new Vue({
+		// Прив'язуєм об'єкт до елементу з індексом "app"
 		el: '#app',
+		// Визначаєм данні об'єкту
+		data: {
+			// Створюєм масив повідомлень
+			messages: [	
+			<?php
+				// Перебираєм кожне повідомлення і вставляєм його
+	            foreach ($messages as $message) {
+	                echo ' { text: "' . $message["text"] . '", 
+	                		 username: "' . $message["username"] . '",
+	                		 when: "' . $message["when"] . '" ,
+	                		 imgUrl: "' . $message["imgUrl"] . '" },';
+	            }
+	        ?>
+	        ]
+		}
 	});
 </script>

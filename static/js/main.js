@@ -32,15 +32,8 @@ function getMessages(){
 		data = JSON.parse(data)
 
 		for (i = 0; i < data.length; i++) { 
-			var template = $('#message-template').clone().removeAttr('id').removeAttr('style')
-			var message = data[i]
-
-			template.find('#message-image').attr('src', message.imgUrl).removeAttr('id')
-			template.find('#message-username').text(message.username).removeAttr('id')
-			template.find('#message-time').text(message.when).removeAttr('id')
-			template.find('#message-text').text(message.message).removeAttr('id')
-			
-			template.prependTo('#ul-chat')
+			data[i].text = data[i].message
+			vue.$data.messages.unshift(data[i])
 		}
 	});
 }
