@@ -11,6 +11,7 @@ $opt = [
 
 try{
     $pdo = new PDO("mysql:host=" . DB_SERVER . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD, $opt);
+
 } catch(PDOException $e){
     die("ERROR: Could not connect. " . $e->getMessage());
 }
